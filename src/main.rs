@@ -1,33 +1,6 @@
-use reqwest::Client;
-use serde_json::json;
+mod patterns;
+
 use std::env;
-
-async fn send_ltc(address: &str, amount: f64) -> Result<(), Box<dyn std::error:Error>> {
-    let username = "testnet01";
-    let password = "testnet01";
-
-    let client = Client::new();
-
-    let json_body = json!({
-        "jsonrpc": "1.0",
-        "id": "send",
-        "method": "sendtoaddress",
-        "params": [address, amount]
-    });
-
-    let json_response = client
-        .post("http://127.0.0.1:19332/")
-        .basic_auth(username, Some(password))
-        .header("content-type", "text/plain")
-        .json(&json_body)
-        .send()
-        .await?;
-
-    let to_text = json_response.text().await?;
-    println!("Response: {}", text);
-
-    Ok(())
-}
 
 #[tokio::main]
 async fn main() {
@@ -41,7 +14,7 @@ async fn main() {
     match args[1].as_str() {
         "-send" => {
             if args.len() != 4 {
-                eprintln("Usage: {} - send <address> <amount>", args[0]);
+                eprintln!("Usage: {} - send <address> <amount>", args[0]);
                 return;
             }
 
@@ -54,13 +27,14 @@ async fn main() {
                 }
             };
 
-            if let Err(e) = send_ltc(address, amount).await {
+            if let Err(e) = patterns::send_ltc(address, amount).await {
                 eprintln!("Error sending LTC: {}", e);
             }
         }
         // temp arguments for now, want them for clarity's sake
+        // TODO add exit codes using std::process:exit?
         "-balance" => {
-                    println!("(Placeholder) Fetching wallet balance...");
+            println!("(Placeholder) Fetching wallet balance...");
         }
 
         "-list" => {
