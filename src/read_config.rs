@@ -1,11 +1,10 @@
-use dirs::{self, home_dir};
 use std::fs::File;
 use std::io::{self, prelude::*, BufReader};
 
 #[derive(Debug, Default)]
 pub struct LTCConfig {
-    rpc_user: Option<String>,
-    rpc_password: Option<String>,
+    pub rpc_user: Option<String>,
+    pub rpc_password: Option<String>,
 }
 
 fn read_credentials(file_path: &str) -> io::Result<LTCConfig> {
@@ -33,43 +32,27 @@ fn read_credentials(file_path: &str) -> io::Result<LTCConfig> {
     Ok(config)
 }
 
-// I have no bloody clue as to how to return a struct here
-pub fn read_credentials_verified() -> [String; 2] {
-    let config_file_path_buf = if let Some(mut home_dir) = dirs::home_dir() {
-        home_dir.push(".litecoin");
-        home_dir.push("litecoin.conf");
-        home_dir
-    } else {
-        panic!("Error reading home dir, falling back to ./litecoin.conf");
-    };
-
-    let config_file_path = config_file_path_buf.to_str();
+pub fn read_credentials_verified() -> io::Result<LTCConfig> {
+    let config_file_path = dirs::home_dir()
+        .unwrap_or_else(|| panic!("Cannot determine home dir"))
+        .join(".litecoin")
+        .join("litecoin.conf");
 
     println!("reading from '{:?}'", config_file_path);
 
-    match read_credentials(config_file_path.expect("default")) {
-        Ok(config) => {
-            println!("\nSuccessfully read RPC configuration:");
-            if let Some(ref user) = config.rpc_user {
-                println!("  RPC User: '{}'", user);
-            } else {
-                println!("  RPC User: Not found or empty.");
-            }
-            if let Some(ref password) = config.rpc_password {
-                println!("  RPC Password: '{}'", password); // TODO remove printing
-            } else {
-                println!("  RPC Password: Not found or empty.");
-            }
+    let config = read_credentials(
+        config_file_path
+            .to_str()
+            .expect("Failed to convert path to string"),
+    )?;
 
-            [
-                config.rpc_user.expect("error checking done ahead of time"),
-                config.rpc_password.expect("same story"),
-            ]
-        }
-        Err(e) => {
-            eprintln!("Error reading config file '{:?}': {}", config_file_path, e);
-            [Default::default(), Default::default()]
-        }
+    // have to use &String as String doesn't have the Copy trait
+    match (&config.rpc_user, &config.rpc_password) {
+        (Some(_), Some(_)) => Ok(config),
+        _ => Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "username or password missing in config",
+        )),
     }
 }
 
@@ -78,7 +61,13 @@ mod tests {
     use super::read_credentials_verified;
 
     #[test]
-    fn verify_config_test() {
-        assert_eq!(read_credentials_verified(), ["testnet01", "testnet01"]);
+    fn read_credentials_verified_test() {
+        let config = read_credentials_verified().expect("Failed to read config");
+
+        // as_deref converts my Option<String> to Option<&str>
+        // Some converts my &str to a Option<&str>
+        // this language is so weird man i love it
+        assert_eq!(config.rpc_user.as_deref(), Some("testnet01"));
+        assert_eq!(config.rpc_password.as_deref(), Some("testnet01"));
     }
 }

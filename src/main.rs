@@ -1,11 +1,13 @@
 mod patterns;
 mod read_config;
+use crate::read_config::read_credentials_verified;
 
 use std::env;
 
 #[tokio::main]
 async fn main() {
     let args: Vec<String> = env::args().collect();
+    let config = read_credentials_verified().expect("Failed to load config");
 
     if args.len() < 2 {
         eprintln!("Usage: {} <options> [args...]", args[0]);
@@ -28,7 +30,7 @@ async fn main() {
                 }
             };
 
-            if let Err(e) = patterns::send_ltc(address, amount).await {
+            if let Err(e) = patterns::send_to_address(&config, address, amount).await {
                 eprintln!("Error sending LTC: {}", e);
             }
         }
