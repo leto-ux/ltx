@@ -1,11 +1,10 @@
-use crate::read_config;
+use crate::read_config::read_credentials_verified;
 
 use reqwest::Client;
 use serde_json::json;
 
 pub async fn send_ltc(address: &str, amount: f64) -> Result<(), Box<dyn std::error::Error>> {
-    let username = "testnet01";
-    let password = "testnet01";
+    let [username, password] = read_credentials_verified();
 
     let client = Client::new();
 

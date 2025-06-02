@@ -8,7 +8,7 @@ pub struct LTCConfig {
     rpc_password: Option<String>,
 }
 
-fn read_rpc_credentials(file_path: &str) -> io::Result<LTCConfig> {
+fn read_credentials(file_path: &str) -> io::Result<LTCConfig> {
     let file = File::open(file_path)?;
     let reader = BufReader::new(file);
 
@@ -34,7 +34,7 @@ fn read_rpc_credentials(file_path: &str) -> io::Result<LTCConfig> {
 }
 
 // I have no bloody clue as to how to return a struct here
-pub fn verify_config() -> [String; 2] {
+pub fn read_credentials_verified() -> [String; 2] {
     let config_file_path_buf = if let Some(mut home_dir) = dirs::home_dir() {
         home_dir.push(".litecoin");
         home_dir.push("litecoin.conf");
@@ -47,7 +47,7 @@ pub fn verify_config() -> [String; 2] {
 
     println!("reading from '{:?}'", config_file_path);
 
-    match read_rpc_credentials(config_file_path.expect("default")) {
+    match read_credentials(config_file_path.expect("default")) {
         Ok(config) => {
             println!("\nSuccessfully read RPC configuration:");
             if let Some(ref user) = config.rpc_user {
@@ -75,10 +75,10 @@ pub fn verify_config() -> [String; 2] {
 
 #[cfg(test)]
 mod tests {
-    use super::verify_config;
+    use super::read_credentials_verified;
 
     #[test]
     fn verify_config_test() {
-        assert_eq!(verify_config(), ["testnet01", "testnet01"]);
+        assert_eq!(read_credentials_verified(), ["testnet01", "testnet01"]);
     }
 }
