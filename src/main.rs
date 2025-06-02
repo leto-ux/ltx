@@ -1,4 +1,5 @@
 mod patterns;
+mod read_config;
 
 use std::env;
 
