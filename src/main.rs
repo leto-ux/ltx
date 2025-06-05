@@ -48,9 +48,38 @@ async fn main() {
             }
         }
 
-        "-balance" => {
+        "-listaddressgroupings" => {
             println!("(Placeholder) Fetching wallet balance...");
         }
+
+        "-getbalance" => match args.len() {
+            2 => {
+                if let Err(e) = patterns::get_balance(&config, 0).await {
+                    eprintln!("Error generating a new address: {}", e);
+                }
+            }
+
+            3 => {
+                let confirmation_count: u32 = match args[2].parse() {
+                    Ok(val) => val,
+                    Err(_) => {
+                        eprintln!("Invalid confirmation count: {}", args[2]);
+                        return;
+                    }
+                };
+
+                if let Err(e) = patterns::get_balance(&config, confirmation_count).await {
+                    eprintln!("Error getting balance: {}", e);
+                }
+            }
+
+            _ => {
+                eprintln!(
+                    "Usage: {} -getbalance <confirmation_count (optional)>",
+                    args[0]
+                );
+            }
+        },
 
         "-list" => {
             println!("(Placeholder) Listing recent transactions...");

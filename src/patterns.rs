@@ -56,16 +56,57 @@ pub async fn send_to_address(
     Ok(())
 }
 
-#[allow(dead_code, unused_variables)] // temp so that bacon chills out a bit
 pub async fn get_new_address(config: &LTCConfig) -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
     let (username, password) = set_username_password(config);
 
     let body = json!({
         "jsonrpc": "1.0",
-        "id": "send",
+        "id": "curltest",
         "method": "getnewaddress",
         "params": []
+    });
+
+    let response = set_response(&client, &username, &password, &body).await?;
+
+    let to_text = response.text().await?;
+    println!("Response: {}", to_text);
+
+    Ok(())
+}
+
+// #[allow(dead_code, unused_variables)] // temp so that bacon chills out a bit
+pub async fn list_address_groupings(config: &LTCConfig) -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new();
+    let (username, password) = set_username_password(config);
+
+    let body = json!({
+        "jsonrpc": "1.0",
+        "id": "curltest",
+        "method": "listaddressgroupings",
+        "params": []
+    });
+
+    let response = set_response(&client, &username, &password, &body).await?;
+
+    let to_text = response.text().await?;
+    println!("Response: {}", to_text);
+
+    Ok(())
+}
+
+pub async fn get_balance(
+    config: &LTCConfig,
+    confirmation_count: u32,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new();
+    let (username, password) = set_username_password(config);
+
+    let body = json!({
+        "jsonrpc": "1.0",
+        "id": "curltest",
+        "method": "getbalance",
+        "params": ["*", confirmation_count]
     });
 
     let response = set_response(&client, &username, &password, &body).await?;
