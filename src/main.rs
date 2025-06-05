@@ -17,7 +17,7 @@ async fn main() {
     match args[1].as_str() {
         "-send" => {
             if args.len() != 4 {
-                eprintln!("Usage: {} - send <address> <amount>", args[0]);
+                eprintln!("Usage: {} -send <address> <amount>", args[0]);
                 return;
             }
 
@@ -34,8 +34,20 @@ async fn main() {
                 eprintln!("Error sending LTC: {}", e);
             }
         }
+
         // temp arguments for now, want them for clarity's sake
         // TODO add exit codes using std::process:exit?
+        "-getnewaddress" => {
+            if args.len() != 2 {
+                eprintln!("Usage: {} -getnewaddress", args[0]);
+                return;
+            }
+
+            if let Err(e) = patterns::get_new_address(&config).await {
+                eprintln!("Error generating a new address: {}", e);
+            }
+        }
+
         "-balance" => {
             println!("(Placeholder) Fetching wallet balance...");
         }
