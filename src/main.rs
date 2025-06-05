@@ -15,7 +15,7 @@ async fn main() {
     }
 
     match args[1].as_str() {
-        "-send" => {
+        "--send" => {
             if args.len() != 4 {
                 eprintln!("Usage: {} -send <address> <amount>", args[0]);
                 return;
@@ -37,22 +37,27 @@ async fn main() {
 
         // temp arguments for now, want them for clarity's sake
         // TODO add exit codes using std::process:exit?
-        "-getnewaddress" => {
-            if args.len() != 2 {
-                eprintln!("Usage: {} -getnewaddress", args[0]);
-                return;
+        "--getnewaddress" => match args.len() {
+            2 => {
+                if let Err(e) = patterns::get_new_address(&config, "").await {
+                    eprintln!("Error generating a new address: {}", e);
+                }
             }
 
-            if let Err(e) = patterns::get_new_address(&config).await {
-                eprintln!("Error generating a new address: {}", e);
+            3 => {
+                let label = &args[2];
+
+                if let Err(e) = patterns::get_new_address(&config, label).await {
+                    eprintln!("Error generating a new address: {}", e);
+                }
             }
-        }
 
-        "-listaddressgroupings" => {
-            println!("(Placeholder) Fetching wallet balance...");
-        }
+            _ => {
+                eprintln!("Usage: {} -getnewaddress <label (optional)>", args[0]);
+            }
+        },
 
-        "-getbalance" => match args.len() {
+        "--getbalance" => match args.len() {
             2 => {
                 if let Err(e) = patterns::get_balance(&config, 0).await {
                     eprintln!("Error generating a new address: {}", e);
@@ -81,21 +86,26 @@ async fn main() {
             }
         },
 
-        "-list" => {
+        "--listaddressgroupings" => {
+            println!("(Placeholder) Fetching wallet balance...");
+        }
+
+        "--list" => {
             println!("(Placeholder) Listing recent transactions...");
         }
 
-        "-help" | "--help" => {
+        "--help" | "-h" => {
             println!("Usage:");
-            println!("  {} -send <address> <amount>", args[0]);
-            println!("  {} -balance", args[0]);
-            println!("  {} -list", args[0]);
-            println!("  {} -help", args[0]);
+            println!("  {} --send <address> <amount>", args[0]);
+            println!("  {} --getnewaddress <label (optional)>", args[0]);
+            println!("  {} --getbalance <confirmation_count(optional)>", args[0]);
+            println!("  {} --listaddressgroupings", args[0]);
+            println!("  {} --help", args[0]);
         }
 
         _ => {
             eprintln!("Unknown option: {}", args[1]);
-            eprintln!("Use -help to see available commands.");
+            eprintln!("Use --help to see available commands.");
         }
     }
 }

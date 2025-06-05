@@ -56,7 +56,10 @@ pub async fn send_to_address(
     Ok(())
 }
 
-pub async fn get_new_address(config: &LTCConfig) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn get_new_address(
+    config: &LTCConfig,
+    label: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
     let client = Client::new();
     let (username, password) = set_username_password(config);
 
@@ -64,7 +67,7 @@ pub async fn get_new_address(config: &LTCConfig) -> Result<(), Box<dyn std::erro
         "jsonrpc": "1.0",
         "id": "curltest",
         "method": "getnewaddress",
-        "params": []
+        "params": [label]
     });
 
     let response = set_response(&client, &username, &password, &body).await?;
