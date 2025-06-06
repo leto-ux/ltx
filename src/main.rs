@@ -15,9 +15,9 @@ async fn main() {
     }
 
     match args[1].as_str() {
-        "--send" => {
+        "--sendtoaddress" => {
             if args.len() != 4 {
-                eprintln!("Usage: {} -send <address> <amount>", args[0]);
+                eprintln!("Usage: {} -sendtoaddress <address> <amount>", args[0]);
                 return;
             }
 
@@ -96,7 +96,7 @@ async fn main() {
 
         "--help" | "-h" => {
             println!("Usage:");
-            println!("  {} --send <address> <amount>", args[0]);
+            println!("  {} --sendtoaddress <address> <amount>", args[0]);
             println!("  {} --getnewaddress <label (optional)>", args[0]);
             println!("  {} --getbalance <confirmation_count(optional)>", args[0]);
             println!("  {} --listaddressgroupings", args[0]);
