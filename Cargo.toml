@@ -8,6 +8,7 @@ opt-level = 0
 
 [profile.release]
 opt-level = 3
+# strip = true # this binary prob ain't size constrained
 
 [dependencies]
 reqwest = { version = "0.11", features = ["json"] }
@@ -15,3 +16,6 @@ tokio = { version = "1", features = ["full"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 dirs = "5.0.1"
+
+# jesus christ
+# https://github.com/johnthagen/min-sized-rust
