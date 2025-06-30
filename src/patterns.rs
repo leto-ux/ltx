@@ -51,7 +51,7 @@ pub async fn send_to_address(
     let response = set_response(&client, &username, &password, &body).await?;
 
     let to_text = response.text().await?;
-    println!("Response: {}", to_text);
+    println!("{}", to_text);
 
     Ok(())
 }
@@ -71,9 +71,22 @@ pub async fn get_new_address(
     });
 
     let response = set_response(&client, &username, &password, &body).await?;
-
     let to_text = response.text().await?;
-    println!("Response: {}", to_text);
+    let parsed: serde_json::Value = serde_json::from_str(&to_text)?;
+
+    match parsed["error"].as_str() {
+        None => match parsed["result"].as_str() {
+            Some(address) => println!("{}", address),
+            None => panic!("\"result\" field is missing or is not a string!"),
+        },
+        Some(err) => println!("{}", err),
+    }
+
+    // if parsed["error"] == "null" {
+    //     println!("{}", parsed["result"].as_str());
+    // } else {
+    //     println!("ERROR: {}", parsed["error"]);
+    // }
 
     Ok(())
 }
@@ -93,7 +106,7 @@ pub async fn list_address_groupings(config: &LTCConfig) -> Result<(), Box<dyn st
     let response = set_response(&client, &username, &password, &body).await?;
 
     let to_text = response.text().await?;
-    println!("Response: {}", to_text);
+    println!("{}", to_text);
 
     Ok(())
 }
@@ -115,7 +128,7 @@ pub async fn get_balance(
     let response = set_response(&client, &username, &password, &body).await?;
 
     let to_text = response.text().await?;
-    println!("Response: {}", to_text);
+    println!("{}", to_text);
 
     Ok(())
 }

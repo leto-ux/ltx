@@ -38,7 +38,7 @@ pub fn read_credentials_verified() -> io::Result<LTCConfig> {
         .join(".litecoin")
         .join("litecoin.conf");
 
-    println!("reading from '{:?}'", config_file_path);
+    // println!("reading from '{:?}'", config_file_path);
 
     let config = read_credentials(
         config_file_path

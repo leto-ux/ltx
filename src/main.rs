@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 mod patterns;
 mod read_config;
 use crate::read_config::read_credentials_verified;
