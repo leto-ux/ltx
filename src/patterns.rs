@@ -82,12 +82,6 @@ pub async fn get_new_address(
         Some(err) => println!("{}", err),
     }
 
-    // if parsed["error"] == "null" {
-    //     println!("{}", parsed["result"].as_str());
-    // } else {
-    //     println!("ERROR: {}", parsed["error"]);
-    // }
-
     Ok(())
 }
 

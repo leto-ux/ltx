@@ -1,5 +1,6 @@
 use std::fs::File;
-use std::io::{self, prelude::*, BufReader};
+use std::io::{self, prelude::*, BufReader, ErrorKind};
+use std::path::PathBuf; // For error handling
 
 #[derive(Debug, Default)]
 pub struct LTCConfig {
@@ -33,12 +34,32 @@ fn read_credentials(file_path: &str) -> io::Result<LTCConfig> {
 }
 
 pub fn read_credentials_verified() -> io::Result<LTCConfig> {
-    let config_file_path = dirs::home_dir()
-        .unwrap_or_else(|| panic!("Cannot determine home dir"))
-        .join(".litecoin")
-        .join("litecoin.conf");
+    let config_paths = [PathBuf::from("/var/www/website/config/litecoin.conf"), {
+        let mut home_path = dirs::home_dir().ok_or_else(|| {
+            io::Error::new(ErrorKind::NotFound, "Could not determine home directory")
+        })?;
+        home_path.push(".litecoin/litecoin.conf");
+        home_path
+    }];
 
-    // println!("reading from '{:?}'", config_file_path);
+    let mut found_config_path: Option<PathBuf> = None;
+
+    for path in &config_paths {
+        if path.exists() {
+            found_config_path = Some(path.clone());
+            break; // Found the file, stop checking
+        }
+    }
+
+    let config_file_path = match found_config_path {
+        Some(path) => path,
+        None => {
+            return Err(io::Error::new(
+                ErrorKind::NotFound,
+                "Litecoin configuration file not found in any specified location.",
+            ));
+        }
+    };
 
     let config = read_credentials(
         config_file_path
