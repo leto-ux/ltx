@@ -37,6 +37,35 @@ async fn main() {
             }
         }
 
+        "--sendtoaddresstax" => {
+            if args.len() != 5 {
+                eprintln!(
+                    "Usage: {} -sendtoaddresstax <address> <amount> <tax>",
+                    args[0]
+                );
+                return;
+            }
+
+            let address = &args[2];
+            let amount: f64 = match args[3].parse() {
+                Ok(val) => val,
+                Err(_) => {
+                    eprintln!("Invalid amount: {}", args[3]);
+                    return;
+                }
+            };
+            let tax: f64 = match args[4].parse() {
+                Ok(val) => val,
+                Err(_) => {
+                    eprintln!("Invalid tax: {}", args[4]);
+                    return;
+                }
+            };
+
+            if let Err(e) = patterns::send_to_address_tax(&config, address, amount, tax).await {
+                eprintln!("Error sending LTC: {}", e);
+            }
+        }
         // temp arguments for now, want them for clarity's sake
         // TODO add exit codes using std::process:exit?
         "--getnewaddress" => match args.len() {

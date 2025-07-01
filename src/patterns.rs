@@ -24,8 +24,8 @@ async fn set_response(
     body: &Value,
 ) -> Result<Response, reqwest::Error> {
     client
-        .post("http://host.docker.internal:19332/wallet/maninthemiddle")
-        // .post("http://172.17.0.1:19332/wallet/silksong")
+        // .post("http://host.docker.internal:19332/wallet/maninthemiddle")
+        .post("http://172.17.0.1:19332/wallet/silksong")
         .basic_auth(username, Some(password))
         .header("content-type", "text/plain")
         .json(&body)
@@ -52,26 +52,54 @@ pub async fn send_to_address(
     let response = set_response(&client, &username, &password, &body).await?;
     let to_text = response.text().await?;
     let parsed: serde_json::Value = serde_json::from_str(&to_text)?;
-    println!("1");
 
     match parsed["error"].as_str() {
-        None => match parsed["result"].as_str() {
-            Some(address) => {
-                println!("2");
-                println!("{}", address);
-            }
-            None => {
-                println!("3");
-                panic!("\"result\" field is missing or is not a string!");
-            }
-        },
+        None => (),
+        Some(err) => panic!("{}", err),
+    }
+
+    Ok(())
+}
+
+pub async fn send_to_address_tax(
+    config: &LTCConfig,
+    address: &str,
+    amount: f64,
+    tax: f64,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if tax < 0.0 || tax > 1.0 {
+        panic!("Tax exceeded limit")
+    };
+
+    let client = Client::new();
+
+    let (username, password) = set_username_password(config);
+
+    let amount_tax: f64 = amount - amount * tax;
+
+    let comment: &str = &format!("Tax rate = ${:.2}; Tax paid = ${:.2}", tax, (amount * tax));
+
+    let body = json!({
+        "jsonrpc": "1.0",
+        "id": "send",
+        "method": "sendtoaddress",
+        "params": [address, amount_tax, comment]
+    });
+
+    let response = set_response(&client, &username, &password, &body).await?;
+    let to_text = response.text().await?;
+    let parsed: serde_json::Value = serde_json::from_str(&to_text)?;
+
+    match parsed["error"].as_str() {
+        None => (),
         Some(err) => {
-            println!("4");
-            println!("{}", err);
+            panic!("{}", err);
+            // i guess for actual releases i should use this
+            // eprintln! ("{}", err) // or some other cleaner error message
+            // std::process:exit(10);
         }
     }
 
-    println!("5");
     Ok(())
 }
 
