@@ -24,8 +24,8 @@ async fn set_response(
     body: &Value,
 ) -> Result<Response, reqwest::Error> {
     client
-        // .post("http://host.docker.internal:19332/wallet/maninthemiddle")
-        .post("http://172.17.0.1:19332/wallet/silksong")
+        .post("http://host.docker.internal:19332/wallet/maninthemiddle")
+        // .post("http://172.17.0.1:19332/wallet/silksong")
         .basic_auth(username, Some(password))
         .header("content-type", "text/plain")
         .json(&body)
@@ -156,9 +156,11 @@ pub async fn list_transactions(config: &LTCConfig) -> Result<(), Box<dyn std::er
         match parsed["result"][i]["address"].as_str() {
             Some(address) => {
                 let amount = parsed["result"][i]["amount"].clone();
+                let txid = parsed["result"][i]["txid"].clone();
                 transactions.push(json!({
                     "address": address,
-                    "amount": amount
+                    "amount": amount,
+                    "txid": txid,
                 }));
             }
             None => break,
