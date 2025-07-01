@@ -59,6 +59,18 @@ async fn main() {
             }
         },
 
+        "--listtransactions" => match args.len() {
+            2 => {
+                if let Err(e) = patterns::list_transactions(&config).await {
+                    eprintln!("Error listing transactions: {}", e);
+                }
+            }
+
+            _ => {
+                eprintln!("Usage: {} -listtransactions", args[0]);
+            }
+        },
+
         "--getbalance" => match args.len() {
             2 => {
                 if let Err(e) = patterns::get_balance(&config, 0).await {
@@ -102,6 +114,7 @@ async fn main() {
             println!("  {} --getnewaddress <label (optional)>", args[0]);
             println!("  {} --getbalance <confirmation_count(optional)>", args[0]);
             println!("  {} --listaddressgroupings", args[0]);
+            println!("  {} --listtransactions", args[0]);
             println!("  {} --help", args[0]);
         }
 

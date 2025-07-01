@@ -1,7 +1,7 @@
 use crate::read_config::LTCConfig;
 
 use reqwest::{Client, Response};
-use serde_json::{json, Value};
+use serde_json::{json, Map, Value};
 
 fn set_username_password(config: &LTCConfig) -> (String, String) {
     let username = config
@@ -25,7 +25,7 @@ async fn set_response(
 ) -> Result<Response, reqwest::Error> {
     client
         .post("http://host.docker.internal:19332/wallet/maninthemiddle")
-        // .post("http://127.0.0.1:19332/")
+        // .post("http://172.17.0.1:19332/wallet/silksong")
         .basic_auth(username, Some(password))
         .header("content-type", "text/plain")
         .json(&body)
@@ -100,6 +100,43 @@ pub async fn get_new_address(
         },
         Some(err) => println!("{}", err),
     }
+
+    Ok(())
+}
+
+pub async fn list_transactions(config: &LTCConfig) -> Result<(), Box<dyn std::error::Error>> {
+    let client = Client::new();
+    let (username, password) = set_username_password(config);
+    const TRANSACTION_HISTORY: usize = 100;
+
+    let body = json!({
+        "jsonrpc": "1.0",
+        "id": "curltest",
+        "method": "listtransactions",
+        // probably a reliability risk, doesn't matter for a project, but would were someone to
+        // say, screw it, if Ross got pardoned, then so could I
+        "params": ["*", TRANSACTION_HISTORY, 0],
+    });
+
+    let response = set_response(&client, &username, &password, &body).await?;
+    let to_text = response.text().await?;
+    let parsed: serde_json::Value = serde_json::from_str(&to_text)?;
+
+    let mut transactions = Vec::new();
+
+    for i in 0..TRANSACTION_HISTORY {
+        match parsed["result"][i]["address"].as_str() {
+            Some(address) => {
+                let amount = parsed["result"][i]["amount"].clone();
+                transactions.push(json!({
+                    "address": address,
+                    "amount": amount
+                }));
+            }
+            None => break,
+        };
+    }
+    println!("{}", serde_json::to_string(&transactions).unwrap());
 
     Ok(())
 }
