@@ -24,7 +24,8 @@ async fn set_response(
     body: &Value,
 ) -> Result<Response, reqwest::Error> {
     client
-        .post("http://127.0.0.1:19332/")
+        .post("http://host.docker.internal:19332/wallet/maninthemiddle")
+        // .post("http://127.0.0.1:19332/")
         .basic_auth(username, Some(password))
         .header("content-type", "text/plain")
         .json(&body)
@@ -49,10 +50,28 @@ pub async fn send_to_address(
     });
 
     let response = set_response(&client, &username, &password, &body).await?;
-
     let to_text = response.text().await?;
-    println!("{}", to_text);
+    let parsed: serde_json::Value = serde_json::from_str(&to_text)?;
+    println!("1");
 
+    match parsed["error"].as_str() {
+        None => match parsed["result"].as_str() {
+            Some(address) => {
+                println!("2");
+                println!("{}", address);
+            }
+            None => {
+                println!("3");
+                panic!("\"result\" field is missing or is not a string!");
+            }
+        },
+        Some(err) => {
+            println!("4");
+            println!("{}", err);
+        }
+    }
+
+    println!("5");
     Ok(())
 }
 
